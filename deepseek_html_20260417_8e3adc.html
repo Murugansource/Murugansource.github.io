@@ -1,0 +1,394 @@
+<!DOCTYPE html>
+<html lang="ta">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+    <title>AI Emotional Music Player | தமிழ் பாடல்கள்</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: system-ui, 'Segoe UI', 'Poppins', sans-serif;
+        }
+        body {
+            background: linear-gradient(145deg, #0b1120 0%, #19233c 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem 1rem;
+        }
+        .glass-card {
+            max-width: 1300px;
+            width: 100%;
+            background: rgba(15, 25, 45, 0.65);
+            backdrop-filter: blur(12px);
+            border-radius: 3rem;
+            box-shadow: 0 25px 45px rgba(0,0,0,0.3), 0 0 0 1px rgba(255,255,255,0.1);
+            padding: 2rem;
+            transition: all 0.3s ease;
+        }
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #E8EFFF, #A0C0FF);
+            -webkit-background-clip: text;
+            background-clip: text;
+            color: transparent;
+            text-align: center;
+            letter-spacing: -0.5px;
+            margin-bottom: 0.5rem;
+        }
+        .sub {
+            text-align: center;
+            color: #9aaec5;
+            margin-bottom: 2rem;
+            font-weight: 500;
+        }
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+        }
+        @media (max-width: 900px) {
+            .main-grid { grid-template-columns: 1fr; gap: 2rem; }
+            .glass-card { padding: 1.5rem; }
+        }
+        .mood-section, .webcam-section {
+            background: rgba(0,0,0,0.35);
+            border-radius: 2rem;
+            padding: 1.5rem;
+            backdrop-filter: blur(4px);
+        }
+        .section-title {
+            font-size: 1.6rem;
+            font-weight: 600;
+            color: #c9e1ff;
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-left: 4px solid #5d9eff;
+            padding-left: 1rem;
+        }
+        .mood-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+        .mood-btn {
+            background: rgba(20, 35, 60, 0.8);
+            border: none;
+            padding: 0.8rem 1.8rem;
+            border-radius: 60px;
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: #eef5ff;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            backdrop-filter: blur(5px);
+            box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+            flex: 0 0 auto;
+        }
+        .mood-btn:hover {
+            transform: scale(1.02);
+            background: #2c4f8c;
+            box-shadow: 0 8px 20px rgba(0, 100, 255, 0.3);
+        }
+        .now-playing {
+            background: #0a0f1cbb;
+            border-radius: 1.5rem;
+            padding: 1.2rem;
+            margin-top: 1rem;
+        }
+        .track-info {
+            font-size: 1.2rem;
+            font-weight: 500;
+            color: #cde2ff;
+        }
+        .track-name {
+            color: white;
+            font-weight: 700;
+            font-size: 1.3rem;
+            margin: 0.3rem 0;
+        }
+        audio {
+            width: 100%;
+            margin-top: 0.8rem;
+            border-radius: 40px;
+        }
+        .video-wrapper {
+            position: relative;
+            border-radius: 1.5rem;
+            overflow: hidden;
+            margin-bottom: 1rem;
+            background: #00000055;
+        }
+        video, canvas {
+            width: 100%;
+            border-radius: 1.2rem;
+            display: block;
+        }
+        canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+        .cam-controls {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin: 1rem 0;
+        }
+        .btn-primary {
+            background: #3b6eff;
+            border: none;
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-weight: 600;
+            color: white;
+            cursor: pointer;
+            transition: 0.2s;
+            flex: 1;
+            font-size: 1rem;
+        }
+        .btn-primary:hover { background: #2554cf; transform: translateY(-2px);}
+        .btn-secondary { background: #334155; }
+        .btn-secondary:hover { background: #1e2a3a; }
+        .emotion-result {
+            background: #00000066;
+            padding: 0.8rem;
+            border-radius: 2rem;
+            text-align: center;
+            font-size: 1.1rem;
+            font-weight: 500;
+            color: #b9dcff;
+            margin-top: 0.8rem;
+        }
+        .status-msg {
+            font-size: 0.9rem;
+            color: #ffd966;
+            margin-top: 0.5rem;
+        }
+        footer {
+            text-align: center;
+            margin-top: 2rem;
+            color: #6c86a3;
+            font-size: 0.8rem;
+        }
+        .note {
+            background: #ffecb3;
+            color: #5d3a1a;
+            padding: 0.8rem;
+            border-radius: 1rem;
+            font-size: 0.8rem;
+            margin-top: 1rem;
+        }
+    </style>
+</head>
+<body>
+<div class="glass-card">
+    <h1>🎧 AI Emotional Music Player - தமிழ்</h1>
+    <div class="sub">🎵 90s & 2000s தமிழ் பாடல்கள் | உங்கள் மனநிலைக்கு ஏற்ற இசை</div>
+    <div class="main-grid">
+        <div class="mood-section">
+            <div class="section-title">🎭 1. உங்கள் மனநிலையை தேர்வு செய்யவும்</div>
+            <div class="mood-grid" id="moodButtonsContainer"></div>
+            <div class="now-playing">
+                <div class="track-info">🎶 இப்போது ஒலிக்கிறது</div>
+                <div class="track-name" id="currentTrackName">— இல்லை —</div>
+                <audio id="audioPlayer" controls autoplay loop style="display: none;"></audio>
+                <div id="playerStatus" style="font-size:0.85rem; margin-top:6px;">▶️ ஒரு மனநிலையை தேர்வு செய்யவும்</div>
+            </div>
+            <div class="note">
+                📢 குறிப்பு: பாடல்களின் URLs உங்கள் சொந்த MP3 கோப்புகளை சுட்டிக்காட்டும்படி மாற்றிக்கொள்ளவும். 
+                <br>கீழே உள்ள JavaScript-ல் musicDB-ல் 'url' மதிப்புகளை மாற்றவும்.
+            </div>
+        </div>
+        <div class="webcam-section">
+            <div class="section-title">🤖 2. AI முக உணர்வு (நேரலை)</div>
+            <div class="video-wrapper">
+                <video id="webcam" autoplay muted playsinline width="640" height="480"></video>
+                <canvas id="overlayCanvas" width="640" height="480"></canvas>
+            </div>
+            <div class="cam-controls">
+                <button id="startWebcamBtn" class="btn-primary">📸 Webcam + AI தொடங்கு</button>
+                <button id="stopWebcamBtn" class="btn-primary btn-secondary">⏹️ நிறுத்து</button>
+            </div>
+            <div class="emotion-result" id="emotionResult">😶 முக உணர்வு: காத்திருக்கிறது...</div>
+            <div class="status-msg" id="aiStatusMsg">💡 AI மாதிரிகள் தானாக ஏற்றப்படும். Webcam ஐ அனுமதிக்கவும்.</div>
+        </div>
+    </div>
+    <footer>🎤 உங்கள் உணர்வுக்கு ஏற்ப இசை மாறும் | 90s,2000s தமிழ் ஹிட்ஸ்</footer>
+</div>
+
+<script>
+    // 🔥 TAMIL SONGS DATABASE (90s & 2000s)
+    // IMPORTANT: Replace these placeholder URLs with your actual MP3 file URLs.
+    // You can upload songs to GitHub, Google Drive (get direct link), or any free hosting.
+    const musicDB = {
+        happy: [
+            { name: "🎵 Vazhkai (Rhythm) - 2000s", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-1.mp3" }, // replace with tamil song link
+            { name: "🎵 Kadhalukkum (Minnale) - 2001", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-2.mp3" }
+        ],
+        sad: [
+            { name: "🎵 Poongatrile (Uyire) - 1998", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-3.mp3" },
+            { name: "🎵 Ennodu Nee Irundhal (I) - 2015", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-4.mp3" }
+        ],
+        energetic: [
+            { name: "🎵 O Podu (Gemini) - 2002", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-5.mp3" },
+            { name: "🎵 Vettaikaran (Vettaikaran) - 2009", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-6.mp3" }
+        ],
+        calm: [
+            { name: "🎵 Yaaro Yaarodi (Alaipayuthey) - 2000", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-7.mp3" },
+            { name: "🎵 Venmathi (Minnale) - 2001", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-8.mp3" }
+        ],
+        romantic: [
+            { name: "🎵 Anbe Anbe (Unnidathil Ennai Koduthen) - 1998", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-9.mp3" },
+            { name: "🎵 Nenjikulle (Star) - 2001", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-10.mp3" }
+        ],
+        neutral: [
+            { name: "🎵 Mounam (Nee Manasu Naaku Telusu) - 2002", url: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-11.mp3" }
+        ]
+    };
+
+    // Map AI emotions to mood keys
+    const emotionToMood = {
+        happy: "happy",
+        sad: "sad",
+        angry: "energetic",
+        fearful: "calm",
+        disgusted: "neutral",
+        surprised: "happy",
+        neutral: "neutral"
+    };
+
+    let currentAudio = document.getElementById("audioPlayer");
+    let currentTrackNameSpan = document.getElementById("currentTrackName");
+    let currentMood = null;
+
+    function playMusicByMood(moodKey) {
+        if (!musicDB[moodKey] || musicDB[moodKey].length === 0) {
+            console.warn("No tracks for mood", moodKey);
+            return;
+        }
+        const tracks = musicDB[moodKey];
+        const randomIndex = Math.floor(Math.random() * tracks.length);
+        const track = tracks[randomIndex];
+        currentTrackNameSpan.innerText = `${track.name}`;
+        currentAudio.src = track.url;
+        currentAudio.style.display = "block";
+        currentAudio.load();
+        currentAudio.play().catch(e => {
+            document.getElementById("playerStatus").innerHTML = "⚠️ முதலில் பக்கத்தில் எங்காவது கிளிக் செய்யவும் (autoplay restriction)";
+        });
+        document.getElementById("playerStatus").innerHTML = `🎵 இப்போது: ${track.name}`;
+        currentMood = moodKey;
+    }
+
+    // Mood buttons
+    const moodsList = ["happy", "sad", "energetic", "calm", "romantic"];
+    const container = document.getElementById("moodButtonsContainer");
+    const tamilNames = {
+        happy: "😊 மகிழ்ச்சி", sad: "😔 சோகம்", energetic: "⚡ ஆற்றல்", calm: "😌 அமைதி", romantic: "💖 காதல்"
+    };
+    moodsList.forEach(mood => {
+        const btn = document.createElement("button");
+        btn.className = "mood-btn";
+        btn.innerText = tamilNames[mood];
+        btn.addEventListener("click", () => playMusicByMood(mood));
+        container.appendChild(btn);
+    });
+
+    // Face API logic (same as before, but keep)
+    let isFaceApiReady = false;
+    let detectionInterval = null;
+    const video = document.getElementById("webcam");
+    const canvas = document.getElementById("overlayCanvas");
+    const ctx = canvas.getContext("2d");
+    let stream = null;
+
+    async function loadFaceApiModels() {
+        const statusDiv = document.getElementById("aiStatusMsg");
+        statusDiv.innerHTML = "🧠 AI மாதிரிகள் ஏற்றப்படுகின்றன...";
+        try {
+            await faceapi.nets.tinyFaceDetector.loadFromUri("https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights");
+            await faceapi.nets.faceExpressionNet.loadFromUri("https://cdn.jsdelivr.net/gh/justadudewhohacks/face-api.js@0.22.2/weights");
+            isFaceApiReady = true;
+            statusDiv.innerHTML = "✅ AI தயார்! Webcam முகத்தை கண்டறியும்.";
+        } catch(err) {
+            statusDiv.innerHTML = "⚠️ AI load failed. Check internet.";
+            isFaceApiReady = false;
+        }
+    }
+
+    async function startWebcamAndDetection() {
+        if (!isFaceApiReady) await loadFaceApiModels();
+        if (!isFaceApiReady) { alert("AI models not loaded"); return; }
+        try {
+            if (stream) stream.getTracks().forEach(t => t.stop());
+            stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            await video.play();
+            video.addEventListener("loadedmetadata", () => {
+                canvas.width = video.videoWidth;
+                canvas.height = video.videoHeight;
+            });
+            if (detectionInterval) clearInterval(detectionInterval);
+            detectionInterval = setInterval(detectEmotion, 1500);
+            document.getElementById("aiStatusMsg").innerHTML = "🔍 முக உணர்வை AI பகுப்பாய்வு செய்கிறது...";
+        } catch(err) {
+            document.getElementById("aiStatusMsg").innerHTML = "❌ Camera permission denied.";
+        }
+    }
+
+    async function detectEmotion() {
+        if (!isFaceApiReady || !video.videoWidth || video.paused) return;
+        try {
+            const detections = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions()).withFaceExpressions();
+            if (detections && detections.expressions) {
+                let maxExpr = "neutral", maxVal = 0;
+                for (const [expr, val] of Object.entries(detections.expressions)) {
+                    if (val > maxVal) { maxVal = val; maxExpr = expr; }
+                }
+                document.getElementById("emotionResult").innerHTML = `😀 கண்டறியப்பட்டது: <strong>${maxExpr}</strong> (${(maxVal*100).toFixed(1)}%)`;
+                const targetMood = emotionToMood[maxExpr] || "neutral";
+                if (currentMood !== targetMood) playMusicByMood(targetMood);
+                const dims = { width: video.videoWidth, height: video.videoHeight };
+                const resized = faceapi.resizeResults(detections, dims);
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                faceapi.draw.drawDetections(canvas, resized);
+                faceapi.draw.drawFaceExpressions(canvas, resized, 0.05);
+            } else {
+                document.getElementById("emotionResult").innerHTML = "😐 முகம் காணவில்லை";
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        } catch(e) { console.log(e); }
+    }
+
+    function stopTracks() {
+        if (stream) { stream.getTracks().forEach(t => t.stop()); stream = null; }
+        if (detectionInterval) clearInterval(detectionInterval);
+        video.srcObject = null;
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        document.getElementById("emotionResult").innerHTML = "😶 Webcam நிறுத்தப்பட்டது";
+    }
+
+    document.getElementById("startWebcamBtn").addEventListener("click", startWebcamAndDetection);
+    document.getElementById("stopWebcamBtn").addEventListener("click", stopTracks);
+
+    const script = document.createElement('script');
+    script.src = "https://cdn.jsdelivr.net/npm/face-api.js@0.22.2/dist/face-api.min.js";
+    script.onload = () => console.log("face-api loaded");
+    document.head.appendChild(script);
+
+    document.body.addEventListener("click", () => {
+        if (currentAudio.paused && currentAudio.src) currentAudio.play().catch(e=>{});
+    }, { once: true });
+</script>
+</body>
+</html>
